@@ -24,7 +24,16 @@ It is **not** a rewrite or a relicense. It's a fork: same AGPL-3.0 terms, full c
 - **Git**, plus **CMake** + (on Windows) **Visual Studio Build Tools** for native modules
 - A **Claude Pro/Max** subscription and the Claude Code CLI (`npm i -g @anthropic-ai/claude-code`)
 
-**Install & run**
+**Easiest (Windows):** a one-command installer that checks prerequisites, installs everything, and logs you in:
+```powershell
+git clone https://github.com/Dboy5312/autoclaude.git
+cd autoclaude
+powershell -ExecutionPolicy Bypass -File setup.ps1
+npm run dev
+```
+See **[SETUP.md](./SETUP.md)** for the full guide (prereqs, macOS/Linux, troubleshooting).
+
+**Manual (any OS)**
 ```bash
 git clone https://github.com/Dboy5312/autoclaude.git
 cd autoclaude
