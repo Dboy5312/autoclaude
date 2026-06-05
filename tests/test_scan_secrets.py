@@ -94,7 +94,10 @@ MIIEpAIBAAKCAQEA...
 
     def test_detects_mongodb_url(self):
         """Detects MongoDB URLs with credentials."""
-        content = 'MONGO_URI = "mongodb+srv://admin:secretpass@cluster.mongodb.net/db"'
+        # Obviously-fake placeholder creds. Must keep the Atlas-shaped host for
+        # the scanner's MongoDB pattern to match; this whole test dir is excluded
+        # from GitHub secret scanning via .github/secret_scanning.yml.
+        content = 'MONGO_URI = "mongodb+srv://user:password123@cluster.mongodb.net/db"'
         matches = scan_content(content, "test.py")
         assert len(matches) >= 1
 
