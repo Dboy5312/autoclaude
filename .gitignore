@@ -1,0 +1,12 @@
+# Nothing sensitive lives here yet (docs + license only).
+# When the application source is added, ensure these are ignored BEFORE committing:
+.env
+**/.env
+**/.auto-claude/.env
+**/.auto-claude/worktrees/
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+Thumbs.db
