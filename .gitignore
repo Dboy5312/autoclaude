@@ -1,12 +1,74 @@
-# Nothing sensitive lives here yet (docs + license only).
-# When the application source is added, ensure these are ignored BEFORE committing:
-.env
+# ===========================================================================
+# Secrets / env — users supply their OWN credentials; never commit real ones.
+# ===========================================================================
 **/.env
-**/.auto-claude/.env
-**/.auto-claude/worktrees/
+**/.env.*
+!**/.env.example
+.secrets
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.auto-claude-security.json
+/config.json
+
+# ===========================================================================
+# Per-user / generated data
+# ===========================================================================
+**/.venv/
+venv/
+env/
+ENV/
+.auto-claude/
+.planning/
+.planning-archive/
+.worktrees/
+.auto-claude-status
+
+# ===========================================================================
+# Build artifacts & dependencies
+# ===========================================================================
 node_modules/
+**/node_modules/
+**/out/
 dist/
-out/
-*.log
+build/
+**/build/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+*.tsbuildinfo
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+htmlcov/
+.turbo/
+.cache/
+**/python-runtime/
+**/*.asar
+**/*.blockmap
+**/*.dmg
+**/*.exe
+**/*.msi
+**/*.AppImage
+**/*.snap
+
+# ===========================================================================
+# Stray test fixtures / scratch
+# ===========================================================================
+**/.test-atomic*/
+
+# ===========================================================================
+# IDE / OS
+# ===========================================================================
+.idea/
+.vscode/
 .DS_Store
 Thumbs.db
+*.swp
+*.bak
+*.tmp

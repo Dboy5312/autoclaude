@@ -4,7 +4,7 @@ A maintained fork of **[Auto-Claude](https://github.com/AndyMik90/Auto-Claude)**
 
 This fork picks up where upstream paused: it fixes a class of Windows reliability bugs, quiets a noisy rate-limit loop, adds the latest models, and layers on a set of Claude-Desktop-style capability features (Skills, Output Styles, a global persona, scheduled tasks, a connectors catalog, and a plugin loader).
 
-> **Status:** active dev fork. This repo currently documents the changes and ships the license + attribution. The full source publish is staged behind a credential-scrub pass (see [Publishing the code](#publishing-the-code)).
+> **Status:** active dev fork. **Full source is published here** (scrubbed snapshot — no credentials; you supply your own). See [Quickstart](#quickstart) to build and run it.
 
 ---
 
@@ -12,7 +12,40 @@ This fork picks up where upstream paused: it fixes a class of Windows reliabilit
 
 Upstream Auto-Claude is excellent but hasn't shipped recent updates. This remake keeps the same architecture and license (AGPL-3.0) and continues development — bug fixes, newer Claude models, and quality-of-life features — so the community has an actively maintained build to track.
 
-It is **not** a rewrite or a relicense. It's a fork: same AGPL-3.0 terms, full credit to the original author, all upstream history preserved when the source is published.
+It is **not** a rewrite or a relicense. It's a fork: same AGPL-3.0 terms, full credit to the original author. (This repo is a clean-snapshot publish, so it doesn't carry upstream's git history — attribution is preserved via this README, the AGPL `LICENSE`, and the original docs in [`README.upstream.md`](./README.upstream.md).)
+
+---
+
+## Quickstart
+
+**Prerequisites**
+- **Node.js ≥ 24** and **npm ≥ 10**
+- **Python ≥ 3.12**
+- **Git**, plus **CMake** + (on Windows) **Visual Studio Build Tools** for native modules
+- A **Claude Pro/Max** subscription and the Claude Code CLI (`npm i -g @anthropic-ai/claude-code`)
+
+**Install & run**
+```bash
+git clone https://github.com/Dboy5312/autoclaude.git
+cd autoclaude
+
+# Install BOTH frontend + backend (do NOT use a bare `npm install` — it skips
+# the Python backend setup and the frontend's native-binary postinstall):
+npm run install:all
+
+# Authenticate (token-based login — direct ANTHROPIC_API_KEY is intentionally
+# discouraged by a silent-billing guard; OAuth is the supported path):
+claude setup-token
+# paste the resulting token into apps/backend/.env as CLAUDE_CODE_OAUTH_TOKEN
+# (install:all copies apps/backend/.env.example -> apps/backend/.env for you)
+
+# Launch the desktop app:
+npm run dev
+```
+
+**Logging in / configuration.** All credentials are yours and local — nothing ships in this repo. Set them in `apps/backend/.env` (copied from `apps/backend/.env.example`). The only required key is `CLAUDE_CODE_OAUTH_TOKEN`; everything else (OpenAI, Google, GitLab, Linear, Graphiti/memory, Sentry) is optional and only needed if you use that integration. `apps/frontend/.env` is optional (telemetry/dev flags only — the app runs with none set).
+
+**Headless / CLI** (no desktop UI): see [`README.upstream.md`](./README.upstream.md) — e.g. `cd apps/backend && python runners/spec_runner.py --interactive` then `python run.py --spec 001`.
 
 ---
 
@@ -45,17 +78,9 @@ Architecture, IPC layout, the Python multi-phase backend, and the AGPL-3.0 licen
 
 ---
 
-## Publishing the code
+## A note on credentials
 
-This repo is the documentation + license landing page. The full application source is published as a **second step**, on purpose, because the working tree contains things that must never go public:
-
-- `.env` files and `<project>/.auto-claude/.env` (API keys, OAuth tokens)
-- profile credential stores
-- the maintainer's own project data under `.auto-claude/worktrees/`
-
-Before the source goes up it gets a credential-scrub pass (gitignore audit + history check) so none of that leaks. Until then, this README is the source of truth for *what changed*.
-
-If you want to build from the upstream base in the meantime, start at [AndyMik90/Auto-Claude](https://github.com/AndyMik90/Auto-Claude) and apply the changes described above.
+This repo is a **scrubbed snapshot** — it contains the application source but **no secrets**. There is no `.env`, no OAuth token, no profile credential store, and no maintainer project data in here (all gitignored and verified absent before publish). You log in with your *own* `claude setup-token` and set any optional keys in your local `apps/backend/.env`. Nothing you configure is committed.
 
 ---
 
