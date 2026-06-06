@@ -58,12 +58,16 @@ if(-not (Get-Command cmake -ErrorAction SilentlyContinue)){
 # ---- 2. Install ------------------------------------------------------------
 Write-Host ""
 Info "Installing backend (Python venv + dependencies)..."
+Write-Host "    Uses uv for a fast, wheels-only install (~30-60s). Test deps are" -ForegroundColor Gray
+Write-Host "    skipped; contributors can add them with: npm run install:backend -- --with-tests" -ForegroundColor Gray
 npm run install:backend
 if($LASTEXITCODE -ne 0){ Die "Backend install failed" "See output above. Usually a missing Python 3.12+." }
 Ok "Backend installed"
 
 Write-Host ""
-Info "Installing frontend (Electron + dependencies)... this can take a few minutes."
+Info "Installing frontend (Electron + dependencies)..."
+Write-Host "    First run downloads Electron (~150 MB) and builds native modules -" -ForegroundColor Gray
+Write-Host "    expect a few minutes. This is the slowest step." -ForegroundColor Gray
 npm run install:frontend
 if($LASTEXITCODE -ne 0){ Die "Frontend install failed" "Often missing CMake / VS Build Tools (Desktop C++). Install those, then re-run." }
 Ok "Frontend installed"

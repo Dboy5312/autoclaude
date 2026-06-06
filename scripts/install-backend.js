@@ -65,6 +65,52 @@ function getPipPath() {
     : path.join(venvDir, 'bin', 'pip');
 }
 
+// Get the venv's python interpreter path
+function getVenvPython() {
+  return isWindows
+    ? path.join(venvDir, 'Scripts', 'python.exe')
+    : path.join(venvDir, 'bin', 'python');
+}
+
+// Is `uv` available globally? (uv is ~10-100x faster than pip and resolves the
+// heavy graphiti/google/pandas tree without pip's slow backtracking.)
+function hasGlobalUv() {
+  const r = spawnSync('uv', ['--version'], { encoding: 'utf8', shell: true });
+  return r.status === 0;
+}
+
+/**
+ * Install a requirements file into the venv as fast as possible:
+ *   1. global uv  ->  uv pip install --python <venv> (parallel, fast)
+ *   2. else bootstrap uv into the venv, then use it
+ *   3. else fall back to plain pip
+ * Always --prefer-binary so a missing C/C++ toolchain never triggers a slow
+ * (or failing) source build.
+ */
+function installRequirements(reqFile, label) {
+  const venvPy = getVenvPython();
+  const pref = '--prefer-binary';
+
+  if (hasGlobalUv()) {
+    console.log(`Installing ${label} with uv (fast)...`);
+    if (run(`uv pip install --python "${venvPy}" ${pref} -r ${reqFile}`)) return true;
+    console.warn('uv install failed; falling back to pip...');
+  } else {
+    // Bootstrap uv into the venv (small, quick) then use it for the heavy deps.
+    console.log('Bootstrapping uv for a faster install...');
+    if (run(`"${venvPy}" -m pip install ${pref} uv`)) {
+      console.log(`Installing ${label} with uv (fast)...`);
+      if (run(`"${venvPy}" -m uv pip install ${pref} -r ${reqFile}`)) return true;
+      console.warn('uv install failed; falling back to pip...');
+    } else {
+      console.warn('Could not bootstrap uv; using pip...');
+    }
+  }
+
+  console.log(`Installing ${label} with pip...`);
+  return run(`"${venvPy}" -m pip install ${pref} -r ${reqFile}`);
+}
+
 // Main installation
 async function main() {
   // Check for Python 3.12+
@@ -95,19 +141,29 @@ async function main() {
     process.exit(1);
   }
 
-  // Install dependencies
+  // Install runtime dependencies (uv-accelerated, binary-preferred)
   console.log('\nInstalling dependencies...');
-  const pip = getPipPath();
-  if (!run(`"${pip}" install -r requirements.txt`)) {
+  if (!installRequirements('requirements.txt', 'runtime dependencies')) {
     console.error('Failed to install dependencies');
     process.exit(1);
   }
 
-  // Install test dependencies (needed for pre-commit hooks and development)
-  console.log('\nInstalling test dependencies...');
-  if (!run(`"${pip}" install -r ../../tests/requirements-test.txt`)) {
-    console.error('Failed to install test dependencies');
-    process.exit(1);
+  // Test dependencies (mypy/pytest/coverage) are only needed for development.
+  // Opt in with `--with-tests` or AC_INSTALL_TEST_DEPS=1 so normal users don't
+  // wait on downloads they'll never use.
+  const wantTests =
+    process.argv.includes('--with-tests') ||
+    process.env.AC_INSTALL_TEST_DEPS === '1';
+  let testsInstalled = false;
+  if (wantTests) {
+    console.log('\nInstalling test dependencies...');
+    if (!installRequirements('../../tests/requirements-test.txt', 'test dependencies')) {
+      console.error('Failed to install test dependencies');
+      process.exit(1);
+    }
+    testsInstalled = true;
+  } else {
+    console.log('\nSkipping test dependencies (run with --with-tests to include them).');
   }
 
   // Create .env file from .env.example if it doesn't exist
@@ -136,7 +192,7 @@ async function main() {
   console.log('\n✓ Backend installation complete!');
   console.log(`  Virtual environment: ${venvDir}`);
   console.log('  Runtime dependencies: installed');
-  console.log('  Test dependencies: installed (pytest, etc.)');
+  console.log(`  Test dependencies: ${testsInstalled ? 'installed (pytest, etc.)' : 'skipped (use --with-tests)'}`);
 }
 
 main().catch((err) => {

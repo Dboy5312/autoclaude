@@ -74,6 +74,18 @@ Everything lives in **`apps/backend/.env`** (created for you from `apps/backend/
 
 ---
 
+## How long does it take?
+
+- **Backend** (`install:backend`): ~30–60s. It uses **uv** for a fast, parallel, wheels-only install (no C/C++ toolchain needed), and skips test/dev dependencies.
+- **Frontend** (`install:frontend`): a few minutes the first time — it downloads **Electron (~150 MB)** and builds native modules. This is the slow step, and it's a one-time cost.
+
+**Contributors** who want to run the test suite (`pytest`, `mypy`) install the dev deps explicitly:
+```bash
+npm run install:backend -- --with-tests
+```
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
